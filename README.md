@@ -61,9 +61,9 @@ https://github.com/user-attachments/assets/1eacae89-c55a-4e21-a9f4-533cdbfcf364
 Contributions welcome! Please:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+2. Create a feature branch (`git checkout -b feature/NewFeature`)
 3. Commit changes (`git commit -m 'Add NewFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
+4. Push to branch (`git push origin feature/NewFeature`)
 5. Open a Pull Request
 
 ## License
