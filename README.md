@@ -53,6 +53,9 @@ Supported relationship types:
 - **Cytoscape.js** - Graph visualization
 - **CSS3** - Styling and animations
 
+## Demo Video
+https://github.com/user-attachments/assets/1eacae89-c55a-4e21-a9f4-533cdbfcf364
+
 ## Contributing
 
 Contributions welcome! Please:
