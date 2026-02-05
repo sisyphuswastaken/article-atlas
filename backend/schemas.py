@@ -1,4 +1,3 @@
-
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
@@ -7,6 +6,9 @@ from uuid import uuid4
 
 # Stores metadata extracted separately from article text
 class ArticleMetadata(BaseModel):
+    author: Optional[str] = None                     # Author name
+    publish_date: Optional[datetime] = None          # Publication date
+    word_count: Optional[int] = Field(None, ge=0)    # Word count
     reading_time: Optional[int] = Field(None, ge=0)  # Estimated reading time (minutes)
     tags: List[str] = Field(default_factory=list)    # Article tags
     categories: List[str] = Field(default_factory=list)  # Article categories
@@ -63,7 +65,7 @@ class Entity(BaseModel):
     name: str = Field(..., min_length=1)                   # Entity name
     type: str = Field(..., min_length=1)                   # Entity type
     properties: Dict[str, Any] = Field(default_factory=dict)  # Extra attributes
-    mentions: List[str] = Field(default_factory=list)         # Text mentions
+    mentions: int = Field(default=1, ge=1)                    # Number of mentions
 
     # Ensures name and type are valid
     @field_validator('name', 'type')
@@ -76,13 +78,13 @@ class Entity(BaseModel):
 # Represents a relationship (edge) between two entities
 class Relationship(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))  # Unique relationship ID
-    source_entity_id: str = Field(..., min_length=1)       # Source entity ID
-    target_entity_id: str = Field(..., min_length=1)       # Target entity ID
+    source: str = Field(..., min_length=1)                 # Source entity ID
+    target: str = Field(..., min_length=1)                 # Target entity ID
     relationship_type: str = Field(..., min_length=1)      # Relationship type
     properties: Dict[str, Any] = Field(default_factory=dict)  # Extra attributes
 
     # Ensures required fields are not empty
-    @field_validator('source_entity_id', 'target_entity_id', 'relationship_type')
+    @field_validator('source', 'target', 'relationship_type')
     def validate_non_empty(v: str) -> str:
         if not v or not v.strip():
             raise ValueError("Field cannot be empty")
@@ -98,28 +100,28 @@ class GraphExtraction(BaseModel):
 
 # Represents the full merged knowledge graph
 class GraphData(BaseModel):
-    nodes: List[Entity] = Field(default_factory=list)        # All graph nodes
-    edges: List[Relationship] = Field(default_factory=list)  # All graph edges
-    metadata: Dict[str, Any] = Field(default_factory=dict)   # Graph-level metadata
+    entities: List[Entity] = Field(default_factory=list)        # All graph entities
+    relationships: List[Relationship] = Field(default_factory=list)  # All graph relationships
+    metadata: Dict[str, Any] = Field(default_factory=dict)       # Graph-level metadata
 
-    # Ensures all node IDs are unique
-    @field_validator('nodes')
-    def validate_unique_nodes(v: List[Entity]) -> List[Entity]:
-        ids = [n.id for n in v]
+    # Ensures all entity IDs are unique
+    @field_validator('entities')
+    def validate_unique_entities(v: List[Entity]) -> List[Entity]:
+        ids = [e.id for e in v]
         if len(ids) != len(set(ids)):
-            raise ValueError("Duplicate node IDs found")
+            raise ValueError("Duplicate entity IDs found")
         return v
 
-    # Ensures edges reference valid nodes
-    @field_validator('edges')
-    def validate_edge_references(v: List[Relationship], info) -> List[Relationship]:
-        if 'nodes' in info.data:
-            node_ids = {n.id for n in info.data['nodes']}
-            for edge in v:
-                if edge.source_entity_id not in node_ids:
-                    raise ValueError(f"Invalid source node: {edge.source_entity_id}")
-                if edge.target_entity_id not in node_ids:
-                    raise ValueError(f"Invalid target node: {edge.target_entity_id}")
+    # Ensures relationships reference valid entities
+    @field_validator('relationships')
+    def validate_relationship_references(v: List[Relationship], info) -> List[Relationship]:
+        if 'entities' in info.data:
+            entity_ids = {e.id for e in info.data['entities']}
+            for rel in v:
+                if rel.source not in entity_ids:
+                    raise ValueError(f"Invalid source entity: {rel.source}")
+                if rel.target not in entity_ids:
+                    raise ValueError(f"Invalid target entity: {rel.target}")
         return v
 
 
