@@ -7,7 +7,7 @@ from uuid import uuid4
 # Stores metadata extracted separately from article text
 class ArticleMetadata(BaseModel):
     author: Optional[str] = None                     # Author name
-    publish_date: Optional[datetime] = None          # Publication date
+    publish_date: Optional[str] = None          # Publication date
     word_count: Optional[int] = Field(None, ge=0)    # Word count
     reading_time: Optional[int] = Field(None, ge=0)  # Estimated reading time (minutes)
     tags: List[str] = Field(default_factory=list)    # Article tags
